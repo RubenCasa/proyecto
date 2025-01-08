@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecto-Unach</title>
+    <meta name="description" content="Página web con un video de fondo y contenido superpuesto.">
+    <meta name="keywords" content="video, fondo, página web, HTML, CSS">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Video de fondo -->
+    <video id="video-background" autoplay muted loop>
+        <source src="Unach en movimiento.mp4" type="video/mp4">
+        Tu navegador no soporta el elemento de video.
+    </video>
+
+    <!-- Banner de la Facultad -->
+    <img src="C:\Users\RubenC\Desktop\Universidad\PROYECTOS\banner-facultad.jpeg" alt="Banner Facultad">
+
+    <!-- Botón para controlar el volumen -->
+    <button id="volume-button">Activar sonido</button>
+
+    <!-- Contenido de la página -->
+    <div class="content">
+        <div class="welcome-section">
+            <h1>¡Bienvenidos a la Universidad Nacional de Chimborazo!</h1>
+            <p>Somos estudiantes de la Facultad de Ingeniería, en la carrera de Ciencias de Datos e Inteligencia Artificial.</p>
+            <p>En este sitio, puedes subir datasets para generar gráficos automáticamente y utilizar inteligencia artificial para analizar los resultados.</p>
+            
+            <!-- Formulario para cargar el dataset -->
+            <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" id="file-input" accept=".csv" required>
+                <button type="submit" id="upload-button">Cargar Dataset</button>
+            </form>
+
+            <!-- Contenedor para la tabla de estadísticas -->
+            <div id="stats-table-container"></div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video-background');
+        const volumeButton = document.getElementById('volume-button');
+
+        // Controlar el volumen del video
+        volumeButton.addEventListener('click', () => {
+            if (video.muted) {
+                video.muted = false;
+                volumeButton.textContent = 'Silenciar';
+            } else {
+                video.muted = true;
+                volumeButton.textContent = 'Activar sonido';
+            }
+        });
+
+        // Manejo del formulario para subir el archivo
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    displayStats(data.stats);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        // Mostrar las estadísticas en una tabla
+        function displayStats(stats) {
+            const container = document.getElementById('stats-table-container');
+            container.innerHTML = ''; // Limpiar contenido previo
+
+            const table = document.createElement('table');
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+
+            const headerRow = document.createElement('tr');
+            for (const key in stats) {
+                const th = document.createElement('th');
+                th.textContent = key;
+                th.style.border = '1px solid #ddd';
+                th.style.padding = '8px';
+                th.style.backgroundColor = '#f2f2f2';
+                headerRow.appendChild(th);
+            }
+            table.appendChild(headerRow);
+
+            const dataRow = document.createElement('tr');
+            for (const key in stats) {
+                const td = document.createElement('td');
+                td.textContent = JSON.stringify(stats[key]);
+                td.style.border = '1px solid #ddd';
+                td.style.padding = '8px';
+                dataRow.appendChild(td);
+            }
+            table.appendChild(dataRow);
+
+            container.appendChild(table);
+        }
+    </script>
+</body>
+</html>
+
+
